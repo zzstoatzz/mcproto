@@ -1,0 +1,25 @@
+{
+    "name": "@modelcontextprotocol/client",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "TypeScript client for the Model Context Protocol",
+    "main": "src/index.ts",
+    "bin": {
+        "mcp-client": "./src/cli.ts"
+    },
+    "scripts": {
+        "build": "bun build ./src/index.ts --outdir ./dist",
+        "start": "bun run ./src/cli.ts",
+        "test": "bun test"
+    },
+    "dependencies": {
+        "@atproto/api": "^0.12.0",
+        "@modelcontextprotocol/sdk": "^0.1.0",
+        "commander": "^11.1.0",
+        "zod": "^3.22.4"
+    },
+    "devDependencies": {
+        "bun-types": "latest",
+        "typescript": "^5.0.0"
+    }
+}
