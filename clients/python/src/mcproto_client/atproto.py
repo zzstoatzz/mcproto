@@ -103,6 +103,7 @@ def register_server(
             ),
             "lastRegisteredAt": datetime.now().isoformat(),
             "publisher": publisher_info,
+            "language": "python",
         }
 
         # Only add commit SHA if available

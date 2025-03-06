@@ -22,12 +22,9 @@ def get_github_url(file_path: Path) -> str:
     """
     try:
         git_root = _run_git(["rev-parse", "--show-toplevel"], file_path.parent)
-        print(f"Git root: {git_root}")
         try:
             remote = _run_git(["config", "--get", "remote.origin.url"], git_root)
-            print(f"Original remote: {remote}")
             branch = _run_git(["rev-parse", "--abbrev-ref", "HEAD"], git_root)
-            print(f"Current branch: {branch}")
 
             if remote.startswith("git@github.com:"):
                 remote = remote.replace("git@github.com:", "https://github.com/")
@@ -40,14 +37,10 @@ def get_github_url(file_path: Path) -> str:
 
             # If remote already contains a branch, use that instead of current branch
             if "@" in remote:
-                print(f"Found branch in remote: {remote}")
                 remote, branch = remote.split("@")
-                print(f"Split into remote: {remote}, branch: {branch}")
 
             rel_path = file_path.resolve().relative_to(Path(git_root).resolve())
-            print(f"Relative path: {rel_path}")
             url = f"{remote}/blob/{branch}/{rel_path}"
-            print(f"Final URL: {url}")
             return url
         except subprocess.CalledProcessError:
             raise ValueError("No git remote configured")

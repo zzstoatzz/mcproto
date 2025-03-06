@@ -1,65 +1,149 @@
 import { BskyAgent } from "@atproto/api";
-import { MCPServerConfig } from "./client.js";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 
 const NSID = "app.mcp.server";
 
 interface MCPServerRecord {
   name: string;
   package: string;
+  type: string;
   description?: string;
   version?: string;
+  tools: string[];
   createdAt: string;
-}
-
-export async function registerServerWithATProto(
-  agent: BskyAgent,
-  config: MCPServerConfig
-): Promise<void> {
-  if (!agent.session) {
-    throw new Error("ATProto agent must be authenticated");
-  }
-
-  // Get existing records
-  const { data: records } = await agent.api.com.atproto.repo.listRecords({
-    repo: agent.session.did,
-    collection: NSID,
-  });
-
-  // Check for existing record with same name
-  const existingRecord = records.records.find(
-    (record) => (record.value as MCPServerRecord).name === config.name
-  );
-
-  const recordData: MCPServerRecord = {
-    name: config.name,
-    package: config.package,
-    description: config.description,
-    version: config.version,
-    createdAt: new Date().toISOString(),
-  };
-
-  if (existingRecord) {
-    // Update existing record
-    await agent.api.com.atproto.repo.putRecord({
-      repo: agent.session.did,
-      collection: NSID,
-      rkey: existingRecord.uri.split("/").pop()!,
-      record: recordData,
-    });
-  } else {
-    // Create new record
-    const rkey = makeValidRkey(config.package);
-    await agent.api.com.atproto.repo.putRecord({
-      repo: agent.session.did,
-      collection: NSID,
-      rkey,
-      record: recordData,
-    });
-  }
+  lastRegisteredAt: string;
+  language: string;
 }
 
 function makeValidRkey(packageUrl: string): string {
-  // Create a deterministic key from the package URL
-  const hash = packageUrl.split("/").pop() || packageUrl;
-  return hash.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase();
+  const hash = require('crypto').createHash('sha256');
+  hash.update(packageUrl);
+  return hash.digest('hex').slice(0, 32);
+}
+
+export class MCPRegistrationContext {
+  private server: Server;
+  private name: string;
+  private description?: string;
+  private version: string;
+  private raiseOnError: boolean;
+  public registered: boolean = false;
+
+  constructor(
+    server: Server,
+    options: {
+      name: string;
+      description?: string;
+      version?: string;
+      raiseOnError?: boolean;
+    }
+  ) {
+    this.server = server;
+    this.name = options.name;
+    this.description = options.description;
+    this.version = options.version || "1.0.0";
+    this.raiseOnError = options.raiseOnError || false;
+  }
+
+  async register(): Promise<void> {
+    const handle = process.env.BSKY_HANDLE;
+    const password = process.env.BSKY_PASSWORD;
+    const packageUrl = process.env.MCP_PACKAGE_URL;
+
+    if (!handle || !password) {
+      const error = "BSKY_HANDLE and BSKY_PASSWORD environment variables not set. Cannot register server with ATProto without credentials.";
+      if (this.raiseOnError) {
+        throw new Error(error);
+      } else {
+        console.warn(error);
+        return;
+      }
+    }
+
+    if (!packageUrl) {
+      const error = "MCP_PACKAGE_URL environment variable not set. Cannot register server with ATProto without a package URL.";
+      if (this.raiseOnError) {
+        throw new Error(error);
+      } else {
+        console.warn(error);
+        return;
+      }
+    }
+
+    try {
+      const agent = new BskyAgent({ service: "https://bsky.social" });
+      await agent.login({ identifier: handle, password });
+
+      if (!agent.session) {
+        throw new Error("Failed to authenticate with ATProto");
+      }
+
+      // Get list of tools from server's capabilities (TODO this is a private method)
+      const capabilities = this.server.getCapabilities();
+      const toolNames = capabilities?.tools ? Object.keys(capabilities.tools) : [];
+
+      // Check for existing record with same package URL
+      const rkey = makeValidRkey(packageUrl);
+      const { data: records } = await agent.api.com.atproto.repo.listRecords({
+        repo: agent.session.did,
+        collection: NSID,
+      });
+
+      // Find existing record by rkey
+      const existingRecord = records.records.find(
+        record => record.uri.split("/").pop() === rkey
+      ) as { value: MCPServerRecord } | undefined;
+
+      const recordData: MCPServerRecord = {
+        name: this.name,
+        package: packageUrl,
+        type: NSID,
+        description: this.description,
+        version: this.version,
+        tools: toolNames,
+        createdAt: existingRecord?.value?.createdAt || new Date().toISOString(),
+        lastRegisteredAt: new Date().toISOString(),
+        language: "typescript"
+      };
+
+      if (existingRecord) {
+        // Update existing record
+        await agent.api.com.atproto.repo.putRecord({
+          repo: agent.session.did,
+          collection: NSID,
+          rkey,
+          record: recordData,
+        });
+      } else {
+        // Create new record
+        await agent.api.com.atproto.repo.createRecord({
+          repo: agent.session.did,
+          collection: NSID,
+          rkey,
+          record: recordData,
+        });
+      }
+
+      this.registered = true;
+      console.log(`Successfully registered ${this.name} with ATProto`);
+    } catch (error) {
+      console.error("Failed to register with ATProto:", error);
+      if (this.raiseOnError) {
+        throw error;
+      }
+    }
+  }
+}
+
+export function registerMCPServerWithATProto(
+  server: Server,
+  options: {
+    name: string;
+    description?: string;
+    version?: string;
+    raiseOnError?: boolean;
+  }
+): MCPRegistrationContext {
+  return new MCPRegistrationContext(server, options);
 } 

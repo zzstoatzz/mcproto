@@ -1,88 +1,116 @@
 #!/usr/bin/env bun
-import { FastMCP } from "../src/sdk";
-import { BskyAgent } from "@atproto/api";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { ListToolsRequestSchema, CallToolRequestSchema, ToolSchema } from "@modelcontextprotocol/sdk/types.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { registerMCPServerWithATProto } from "../src/atproto";
+import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
-/**
- * A simple example MCP server that provides basic tools
- */
-const mcp = new FastMCP("Example TypeScript Server");
-
-// Add a simple echo tool
-mcp.addTool({
-    name: "echo",
-    description: "Echo back the input message",
-    parameters: {
-        type: "object",
-        properties: {
-            message: {
-                type: "string",
-                description: "The message to echo back"
-            }
-        },
-        required: ["message"]
-    },
-    handler: async ({ message }) => {
-        return `Echo: ${message}`;
-    }
+// Schema definitions
+const EchoArgsSchema = z.object({
+  message: z.string().describe("Message to echo back"),
 });
 
-// Add a simple calculator tool
-mcp.addTool({
-    name: "add",
-    description: "Add two numbers together",
-    parameters: {
-        type: "object",
-        properties: {
-            a: {
-                type: "number",
-                description: "First number"
-            },
-            b: {
-                type: "number",
-                description: "Second number"
-            }
-        },
-        required: ["a", "b"]
-    },
-    handler: async ({ a, b }) => {
-        return a + b;
-    }
+const AddArgsSchema = z.object({
+  a: z.number().describe("First number"),
+  b: z.number().describe("Second number"),
 });
 
-// Start the server and register with ATProto
-console.log(`Starting ${mcp.name}...`);
-const tools = await mcp.listTools();
-console.log("Available tools:", tools.map(t => t.name).join(", "));
+const ToolInputSchema = ToolSchema.shape.inputSchema;
+type ToolInput = z.infer<typeof ToolInputSchema>;
 
-// Register with ATProto if credentials are available
-const handle = process.env.BSKY_HANDLE;
-const password = process.env.BSKY_PASSWORD;
+// Server setup
+const server = new Server(
+  {
+    name: "example-server",
+    version: "1.0.0",
+  },
+  {
+    capabilities: {
+      tools: {},
+    },
+  }
+);
 
-if (handle && password) {
-    try {
-        const agent = new BskyAgent({ service: "https://bsky.social" });
-        await agent.login({ identifier: handle, password });
-        
-        // Register the server
-        const record = {
-            repo: agent.session?.did,
-            collection: "app.mcp.server",
-            record: {
-                name: mcp.name,
-                package: "https://github.com/zzstoatzz/mcproto/blob/main/clients/typescript/examples/example-server.ts",
-                type: "app.mcp.server",
-                description: "A simple example MCP server with basic tools",
-                tools: tools.map(t => t.name),
-                createdAt: new Date().toISOString(),
-                lastRegisteredAt: new Date().toISOString(),
-            }
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: [
+      {
+        name: "echo",
+        description: "Echoes back the input message",
+        inputSchema: zodToJsonSchema(EchoArgsSchema) as ToolInput,
+      },
+      {
+        name: "add",
+        description: "Adds two numbers together",
+        inputSchema: zodToJsonSchema(AddArgsSchema) as ToolInput,
+      },
+    ],
+  };
+});
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  try {
+    const { name, arguments: args } = request.params;
+
+    switch (name) {
+      case "echo": {
+        const parsed = EchoArgsSchema.safeParse(args);
+        if (!parsed.success) {
+          throw new Error(`Invalid arguments for echo: ${parsed.error}`);
+        }
+        return {
+          content: [{ type: "text", text: `Echo: ${parsed.data.message}` }],
         };
+      }
 
-        await agent.api.com.atproto.repo.createRecord(record);
-        console.log("Successfully registered with ATProto");
-    } catch (error) {
-        console.error("Failed to register with ATProto:", error);
+      case "add": {
+        const parsed = AddArgsSchema.safeParse(args);
+        if (!parsed.success) {
+          throw new Error(`Invalid arguments for add: ${parsed.error}`);
+        }
+        const sum = parsed.data.a + parsed.data.b;
+        return {
+          content: [{ type: "text", text: `The sum of ${parsed.data.a} and ${parsed.data.b} is ${sum}` }],
+        };
+      }
+
+      default:
+        throw new Error(`Unknown tool: ${name}`);
     }
-} else {
-    console.warn("BSKY_HANDLE and BSKY_PASSWORD not set, skipping ATProto registration");
-} 
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      content: [{ type: "text", text: `Error: ${errorMessage}` }],
+      isError: true,
+    };
+  }
+});
+
+async function runServer() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error("MCP Example Server running on stdio");
+
+  const registration = registerMCPServerWithATProto(server, {
+    name: "Example Server",
+    description: "An example MCP server",
+    version: "1.0.0",
+  });
+
+  await registration.register();
+  if (!registration.registered) {
+    console.warn("Failed to register with ATProto");
+  }
+
+  process.on("SIGINT", async () => {
+    await server.close();
+    process.exit(0);
+  });
+}
+
+// Run server
+runServer().catch((error) => {
+  console.error("Fatal error running server:", error);
+  process.exit(1);
+}); 

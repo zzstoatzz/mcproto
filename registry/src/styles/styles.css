@@ -72,15 +72,28 @@ h1 {
 .server-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
 
 .server-meta {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
+    max-width: calc(100% - 5rem);
+    /* Leave space for delete button */
+}
+
+.publisher-info {
+    flex-shrink: 0;
+}
+
+.badge-container {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 .publisher {
@@ -96,11 +109,12 @@ h1 {
 .server-type {
     font-size: 0.75rem;
     font-weight: 500;
-    padding: 0.25rem 0.75rem;
+    padding: 0.15rem 0.5rem;
     background-color: var(--package-bg);
     color: var(--text-secondary);
-    border-radius: 2rem;
+    border-radius: 0.75rem;
     border: 1px solid var(--border-color);
+    white-space: nowrap;
 }
 
 .server-content {
@@ -195,6 +209,7 @@ h1 {
 
 /* Delete button */
 .delete-btn {
+    flex-shrink: 0;
     background-color: transparent;
     color: var(--delete-color);
     border: 1px solid var(--delete-color);

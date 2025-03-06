@@ -53,6 +53,10 @@ export const lexicon: LexiconDoc = {
             type: 'string',
             description: 'Git commit SHA for reproducible installation'
           },
+          language: {
+            type: 'string',
+            description: 'Programming language of the server implementation'
+          },
           publisher: {
             type: 'object',
             description: 'Information about the server publisher',

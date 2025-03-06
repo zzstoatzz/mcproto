@@ -10,6 +10,7 @@ interface MCPServerRecord {
     createdAt: string
     lastRegisteredAt: string
     commitSha?: string  // Git commit SHA for reproducible installs
+    language: string    // Programming language of the server implementation
     // Publisher information
     publisher: {
         did: string
@@ -236,7 +237,7 @@ function ServerCard({ server, onDelete }: ServerCardProps) {
         return date.toLocaleString()
     }
 
-    const getPackageInfo = (pkg: string, commitSha?: string): { type: string, displayName: string, installCommand: string } => {
+    const getPackageInfo = (pkg: string, commitSha?: string, language?: string): { type: string, displayName: string, installCommand: string } => {
         if (pkg.startsWith('@')) {
             return {
                 type: 'NPM package',
@@ -250,10 +251,15 @@ function ServerCard({ server, onDelete }: ServerCardProps) {
                 pkg.replace(/\/(main|master|blob)\//, `/tree/${commitSha}/`) :
                 pkg;
 
+            // Language-specific installation instructions
+            const installCommand = language?.toLowerCase() === 'typescript' ?
+                `git clone ${pkg} && cd $(basename ${pkg} .git) && bun install && bun run examples/example-server.ts` :
+                `uv run ${installUrl}`;
+
             return {
                 type: 'GitHub repository',
                 displayName: pkg,
-                installCommand: `uv run ${installUrl}`
+                installCommand
             }
         }
         return {
@@ -263,7 +269,7 @@ function ServerCard({ server, onDelete }: ServerCardProps) {
         }
     }
 
-    const { type: packageType, displayName, installCommand } = getPackageInfo(server.value.package, server.value.commitSha)
+    const { type: packageType, displayName, installCommand } = getPackageInfo(server.value.package, server.value.commitSha, server.value.language)
 
     return (
         <div className="server" style={{ fontSize: '0.9rem' }}>
@@ -295,8 +301,13 @@ function ServerCard({ server, onDelete }: ServerCardProps) {
                             {did}
                         </div>
                     </div>
-                    <div className="server-type" title="ATProto record collection type" style={{ fontFamily: 'inherit' }}>
-                        {server.value.type}
+                    <div className="badge-container">
+                        <div className="server-type" title="ATProto record collection type" style={{ fontFamily: 'inherit' }}>
+                            {server.value.type}
+                        </div>
+                        <div className="server-type" title="Programming language" style={{ fontFamily: 'inherit' }}>
+                            {server.value.language}
+                        </div>
                     </div>
                 </div>
                 <button
