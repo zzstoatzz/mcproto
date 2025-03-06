@@ -245,14 +245,6 @@ function ServerCard({ server, onDelete }: ServerCardProps) {
             }
         }
         if (pkg.includes('github.com')) {
-            // Extract the branch from the URL
-            const branchMatch = pkg.match(/\/(main|master|blob)\//)
-            const currentBranch = branchMatch ? branchMatch[1] : 'main'
-
-            // Show either the commit SHA or the branch name
-            const ref = commitSha ? `${currentBranch}@${commitSha.slice(0, 7)}` : currentBranch
-            const displayUrl = pkg.replace(/\/(main|master|blob)\//, `/${ref}/`)
-
             // For installation, use the commit SHA if available
             const installUrl = commitSha ?
                 pkg.replace(/\/(main|master|blob)\//, `/tree/${commitSha}/`) :
@@ -260,7 +252,7 @@ function ServerCard({ server, onDelete }: ServerCardProps) {
 
             return {
                 type: 'GitHub repository',
-                displayName: displayUrl,
+                displayName: pkg,
                 installCommand: `uv run ${installUrl}`
             }
         }
