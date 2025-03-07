@@ -20,7 +20,6 @@ BASE_PATH = anyio.Path(__file__).parent / "data"
 
 
 async def _get_save_path(record_type: str) -> anyio.Path:
-    """Get the path for saving a specific record type."""
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     save_path = BASE_PATH / "firehose" / record_type.replace(".", "_") / date_str
     await save_path.mkdir(parents=True, exist_ok=True)
@@ -45,9 +44,10 @@ async def process_commit(
                 record_type = record["$type"]
                 save_path = await _get_save_path(record_type)
 
-                # Use timestamp and sequence for unique filename
-                timestamp = datetime.now(timezone.utc).strftime("%H%M%S")
-                filepath = save_path / f"{timestamp}_{commit.seq}.json"
+                filepath = (
+                    save_path
+                    / f"{datetime.now(timezone.utc).strftime('%H%M%S')}_{commit.seq}.json"
+                )
 
                 tg.start_soon(
                     anyio.Path(filepath).write_text, json.dumps(record, indent=2)

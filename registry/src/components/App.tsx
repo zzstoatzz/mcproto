@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Server, SortOption } from '../types'
-
-import { ServerCard } from './ServerCard'
+import { ServerCard } from './ServerCard/'
 import { PublisherModal } from './PublisherModal'
+import { AttestModal } from './AttestModal'
+import { AuthProvider, useAuth } from '../contexts/AuthContext'
 
 interface MCPServerRecord {
     name: string
@@ -29,7 +30,7 @@ const sortOptions: SortOption[] = [
     { key: 'name', label: 'Name', direction: 'asc' }
 ]
 
-export function App() {
+function AppContent() {
     const [servers, setServers] = useState<Server[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -37,6 +38,8 @@ export function App() {
     const [sortBy, setSortBy] = useState<SortOption>(sortOptions[0])
     const [selectedPublisher, setSelectedPublisher] = useState<Server['value']['publisher'] | null>(null)
     const [groupByPublisher, setGroupByPublisher] = useState(false)
+    const [attestServer, setAttestServer] = useState<Server | null>(null)
+    const { currentUser } = useAuth()
 
     useEffect(() => {
         fetchServers()
@@ -58,13 +61,28 @@ export function App() {
     }
 
     const handleDelete = async (uri: string) => {
+        if (!currentUser) {
+            setError('You must be logged in to delete a server')
+            return
+        }
+
         try {
             const response = await fetch(`/api/servers/${encodeURIComponent(uri)}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${currentUser.did}`
+                }
             })
+
+            if (response.status === 403) {
+                setError('You can only delete your own server records')
+                return
+            }
+
             if (!response.ok) {
                 throw new Error('Failed to delete server')
             }
+
             await fetchServers()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to delete server')
@@ -176,6 +194,7 @@ export function App() {
                                         server={server}
                                         onDelete={handleDelete}
                                         onPublisherClick={handlePublisherClick}
+                                        onAttest={setAttestServer}
                                     />
                                 ))}
                             </div>
@@ -189,6 +208,7 @@ export function App() {
                                 server={server}
                                 onDelete={handleDelete}
                                 onPublisherClick={handlePublisherClick}
+                                onAttest={setAttestServer}
                             />
                         ))}
                     </div>
@@ -207,6 +227,22 @@ export function App() {
                     onClose={() => setSelectedPublisher(null)}
                 />
             )}
+
+            {attestServer && (
+                <AttestModal
+                    server={attestServer}
+                    isOpen={true}
+                    onClose={() => setAttestServer(null)}
+                />
+            )}
         </div>
+    )
+}
+
+export function App() {
+    return (
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
     )
 } 

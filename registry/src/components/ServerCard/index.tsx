@@ -1,10 +1,13 @@
 import React from 'react'
 import { Server } from '../../types'
+import { ServerAttestations } from '../ServerAttestations'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface ServerCardProps {
     server: Server
     onDelete: (uri: string) => void
     onPublisherClick: (publisher: Server['value']['publisher']) => void
+    onAttest: (server: Server) => void
 }
 
 function getPackageInfo(pkg: string, commitSha?: string, language?: string): { type: string, displayName: string, installCommand: string } {
@@ -39,9 +42,22 @@ function getPackageInfo(pkg: string, commitSha?: string, language?: string): { t
     }
 }
 
-export function ServerCard({ server, onDelete, onPublisherClick }: ServerCardProps) {
+export function ServerCard({ server, onDelete, onPublisherClick, onAttest }: ServerCardProps) {
     const { publisher } = server.value
     const did = server.uri.split('/')[2]
+    const { currentUser } = useAuth()
+
+    // Debug logging
+    console.log('Server Card Debug:', {
+        serverDid: did,
+        publisherDid: publisher.did,
+        currentUserDid: currentUser?.did,
+        canDelete: currentUser?.did === publisher.did,
+        server: server,
+        publisher: publisher,
+        currentUser: currentUser,
+        didMatch: currentUser?.did === publisher.did
+    })
 
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr)
@@ -53,6 +69,8 @@ export function ServerCard({ server, onDelete, onPublisherClick }: ServerCardPro
         server.value.commitSha,
         server.value.language
     )
+
+    const canDelete = currentUser?.did === publisher.did
 
     return (
         <div className="server">
@@ -82,13 +100,26 @@ export function ServerCard({ server, onDelete, onPublisherClick }: ServerCardPro
                         </div>
                     </div>
                 </div>
-                <button
-                    className="delete-btn"
-                    onClick={() => onDelete(server.uri)}
-                    title="Delete this server record (only available to the publisher)"
-                >
-                    Delete
-                </button>
+                <div className="server-actions">
+                    <div className="action-buttons">
+                        <button
+                            className="action-btn vouch-btn"
+                            onClick={() => onAttest(server)}
+                            title="Vouch for this server with your Bluesky identity"
+                        >
+                            Vouch
+                        </button>
+                        {canDelete && (
+                            <button
+                                className="action-btn delete-btn"
+                                onClick={() => onDelete(server.uri)}
+                                title="Delete this server record (only available to the publisher)"
+                            >
+                                Delete
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
 
             <div className="server-content">
@@ -148,6 +179,8 @@ export function ServerCard({ server, onDelete, onPublisherClick }: ServerCardPro
                         </span>
                     </div>
                 </div>
+
+                <ServerAttestations server={server} />
             </div>
         </div>
     )

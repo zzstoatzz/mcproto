@@ -203,23 +203,37 @@ h1 {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.delete-btn {
+.server-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
     background: none;
     border: none;
-    color: var(--delete-color);
     cursor: pointer;
     font-size: 0.8rem;
     padding: 0.3rem 0.6rem;
     border-radius: 4px;
-    opacity: 0;
-    transition: opacity 0.2s ease, background-color 0.2s ease;
-    position: absolute;
-    right: -0.5rem;
-    top: -0.5rem;
+    transition: background-color 0.2s ease;
 }
 
-.server:hover .delete-btn {
-    opacity: 1;
+.vouch-btn {
+    color: var(--accent-color);
+}
+
+.vouch-btn:hover {
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+}
+
+.delete-btn {
+    color: var(--delete-color);
 }
 
 .delete-btn:hover {
@@ -637,4 +651,172 @@ h1 {
 .server-count {
     color: var(--text-secondary);
     font-size: 0.9rem;
+}
+
+/* Attestations Styles */
+.attestations-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.attestations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.attestations-header h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.attestation-count {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: var(--package-bg);
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.attestations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.attestation-item {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+}
+
+.attestation-item:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.attestation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.attestation-publisher {
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+.attestation-rating {
+    font-size: 0.75rem;
+    color: var(--success-color);
+    background: rgba(76, 175, 80, 0.1);
+    padding: 0.15rem 0.4rem;
+    border-radius: 10px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.attestation-comment {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    margin: 0.5rem 0;
+    line-height: 1.4;
+    font-style: italic;
+    opacity: 0.9;
+}
+
+.attestation-usage {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
+
+.usage-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.usage-duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.usage-duration::before {
+    content: '⏱';
+    font-size: 1em;
+}
+
+.tools-used {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.tool-tag {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+    background: var(--accent-color);
+    color: var(--text-primary);
+    border-radius: 10px;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.tool-tag:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+.show-more-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.show-more-btn:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--text-primary);
+}
+
+.attestations-loading,
+.attestations-error,
+.no-attestations {
+    text-align: center;
+    padding: 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.attestations-error {
+    color: var(--delete-color);
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
 }
