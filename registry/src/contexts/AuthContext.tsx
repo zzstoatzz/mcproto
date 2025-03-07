@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const logout = useCallback(() => {
         localStorage.removeItem('auth')
         localStorage.removeItem('credentials')
-        agent.session = null
+        agent.session = undefined
         setCurrentUser(null)
     }, [])
 

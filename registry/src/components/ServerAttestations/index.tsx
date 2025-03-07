@@ -68,15 +68,39 @@ export function ServerAttestations({ server }: ServerAttestationsProps) {
     }, [server.uri])
 
     if (loading) {
-        return <div className="attestations-loading">Loading attestations...</div>
+        return (
+            <div className="attestations-section">
+                <div className="attestations-header">
+                    <h3>Attestations</h3>
+                    <span className="attestation-count">-</span>
+                </div>
+                <div className="attestations-loading">Loading attestations...</div>
+            </div>
+        )
     }
 
     if (error) {
-        return <div className="attestations-error">{error}</div>
+        return (
+            <div className="attestations-section">
+                <div className="attestations-header">
+                    <h3>Attestations</h3>
+                    <span className="attestation-count">0</span>
+                </div>
+                <div className="attestations-error">{error}</div>
+            </div>
+        )
     }
 
     if (attestations.length === 0) {
-        return <div className="no-attestations">No attestations yet</div>
+        return (
+            <div className="attestations-section">
+                <div className="attestations-header">
+                    <h3>Attestations</h3>
+                    <span className="attestation-count">0</span>
+                </div>
+                <div className="no-attestations">No attestations yet</div>
+            </div>
+        )
     }
 
     const visibleAttestations = showAll ? attestations : attestations.slice(0, INITIAL_SHOW_COUNT)
