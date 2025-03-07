@@ -7,13 +7,18 @@ const NSID = "app.mcp.server";
 interface MCPServerRecord {
   name: string;
   package: string;
-  type: string;
+  $type: string;
   description?: string;
   version?: string;
   tools: string[];
   createdAt: string;
   lastRegisteredAt: string;
   language: string;
+  publisher: {
+    did: string;
+    handle: string;
+    verifiedDomain?: string;
+  };
 }
 
 function makeValidRkey(packageUrl: string): string {
@@ -98,22 +103,40 @@ export class MCPRegistrationContext {
       const recordData: MCPServerRecord = {
         name: this.name,
         package: packageUrl,
-        type: NSID,
+        $type: NSID,
         description: this.description,
         version: this.version,
         tools: toolNames,
         createdAt: existingRecord?.value?.createdAt || new Date().toISOString(),
         lastRegisteredAt: new Date().toISOString(),
-        language: "typescript"
+        language: "typescript",
+        publisher: {
+          did: agent.session.did,
+          handle: agent.session.handle,
+          ...(agent.session.handle?.includes('.') && { verifiedDomain: agent.session.handle })
+        }
       };
 
       if (existingRecord) {
-        // Update existing record
+        // Update existing record, preserving createdAt and merging metadata
+        const updatedRecord = {
+          ...existingRecord.value,
+          ...recordData,
+          // Preserve creation timestamp
+          createdAt: existingRecord.value.createdAt,
+          // Always update lastRegisteredAt
+          lastRegisteredAt: new Date().toISOString(),
+          // Merge tools arrays without duplicates
+          tools: Array.from(new Set([...existingRecord.value.tools || [], ...toolNames])),
+          // Update publisher info if it's the same publisher
+          publisher: existingRecord.value.publisher.did === agent.session.did ? recordData.publisher : existingRecord.value.publisher
+        };
+
         await agent.api.com.atproto.repo.putRecord({
           repo: agent.session.did,
           collection: NSID,
           rkey,
-          record: recordData,
+          record: updatedRecord,
         });
       } else {
         // Create new record

@@ -1,0 +1,12 @@
+---
+description: python preferences
+globs: *.py
+alwaysApply: false
+---
+# modern python
+- list not List, | not Union, etc
+- type hinting
+
+# IO
+- async
+- use anyio for tasks and their async Path for file io

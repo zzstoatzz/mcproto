@@ -4,19 +4,13 @@
 
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("Example Server")
+mcp = FastMCP("Bloop Server 2")
 
 
 @mcp.tool()
-def echo(message: str) -> str:
-    """Echo back the input message."""
-    return f"Echo: {message}"
-
-
-@mcp.tool()
-def add(a: float, b: float) -> str:
-    """Add two numbers."""
-    return f"The sum of {a} and {b} is {a + b}."
+def bloop(message: str) -> str:
+    """Bloop back the input message."""
+    return f"Bloop: {message}"
 
 
 if __name__ == "__main__":
@@ -24,7 +18,7 @@ if __name__ == "__main__":
 
     with register_mcp_server_with_atproto(
         mcp,
-        name="Example Server",
+        name=mcp.name,
         package="https://github.com/prefecthq/marvin/blob/main/examples/mcproto/server.py",
         description="A simple example MCP server",
     ):

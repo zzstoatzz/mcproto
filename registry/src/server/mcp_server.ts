@@ -12,7 +12,7 @@ export const lexicon: LexiconDoc = {
       key: 'main',
       record: {
         type: 'object',
-        required: ['name', 'package', 'type', 'createdAt'],
+        required: ['name', 'package', '$type', 'createdAt'],
         properties: {
           name: {
             type: 'string',
@@ -22,7 +22,7 @@ export const lexicon: LexiconDoc = {
             type: 'string',
             description: 'NPM package name or other identifier to install/run the server'
           },
-          type: {
+          $type: {
             type: 'string',
             description: 'Type identifier (e.g., app.mcp.server)'
           },

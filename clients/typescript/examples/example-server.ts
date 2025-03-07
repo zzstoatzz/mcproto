@@ -93,8 +93,8 @@ async function runServer() {
   console.error("MCP Example Server running on stdio");
 
   const registration = registerMCPServerWithATProto(server, {
-    name: "Example Server",
-    description: "An example MCP server",
+    name: "Typescript Example Server",
+    description: "An example Typescript MCP server",
     version: "1.0.0",
   });
 

@@ -88,9 +88,9 @@ def register_server(
         # Extract commit SHA if GitHub URL
         commit_sha = extract_github_commit_sha(package)
 
-        # Prepare record data
+        # Prepare base record data
         record_content = {
-            "type": "app.mcp.server",
+            "$type": "app.mcp.server",
             "name": name,
             "package": package,
             "version": version,
@@ -110,10 +110,10 @@ def register_server(
         if commit_sha:
             record_content["commitSha"] = commit_sha
 
-        if existing_record:
-            # Update existing record
+        if existing_record and isinstance(existing_record.value, dict):
+            # For updates, we need to send the complete record
             client.com.atproto.repo.put_record(
-                data=models.ComAtprotoRepoPutRecord.Data(
+                models.ComAtprotoRepoPutRecord.Data(
                     repo=profile.did,
                     collection="app.mcp.server",
                     rkey=rkey,
@@ -121,12 +121,12 @@ def register_server(
                 )
             )
         else:
-            # Create new record with stable rkey
+            # For new records, we send the complete record
             client.com.atproto.repo.create_record(
                 models.ComAtprotoRepoCreateRecord.Data(
                     repo=profile.did,
                     collection="app.mcp.server",
-                    rkey=rkey,  # Use stable rkey
+                    rkey=rkey,
                     record=record_content,
                 )
             )

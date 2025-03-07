@@ -5,7 +5,7 @@ import { NSID } from './mcp_server'
 interface MCPServerRecord {
   name: string
   package: string
-  type: string
+  $type: string
   version?: string
   description?: string
   tools?: string[]
@@ -32,25 +32,64 @@ export function createApiRouter(agent: BskyAgent) {
     }
   })
 
-  // List MCP server records from our repo
+  // List MCP server records from all repos
   router.get('/servers', async (req, res) => {
     try {
-      const { data: records } = await agent.api.com.atproto.repo.listRecords({
+      // First get our own records
+      const ownRecords = await agent.api.com.atproto.repo.listRecords({
         repo: agent.session?.did || '',
         collection: NSID
-      })
+      });
 
-      const servers = records.records.map(record => ({
-        uri: record.uri,
-        value: record.value as MCPServerRecord
-      }))
+      // Then search for all MCP server records
+      const { data: searchResults } = await agent.api.app.bsky.feed.searchPosts({
+        q: `type:${NSID}`,
+        limit: 100  // Adjust limit as needed
+      });
 
-      res.json(servers)
+      // Combine and deduplicate records
+      const seenUris = new Set<string>();
+      const allServers = [];
+
+      // Add own records first
+      for (const record of ownRecords.data.records) {
+        seenUris.add(record.uri);
+        allServers.push({
+          uri: record.uri,
+          value: record.value as MCPServerRecord
+        });
+      }
+
+      // Add records from search results
+      for (const post of searchResults.posts) {
+        if (!seenUris.has(post.uri)) {
+          seenUris.add(post.uri);
+          // Fetch the actual record since search results don't include full record data
+          try {
+            const [did, collection, rkey] = post.uri.split('/').slice(-3);
+            const { data: record } = await agent.api.com.atproto.repo.getRecord({
+              repo: did,
+              collection: NSID,
+              rkey
+            });
+            if (record) {
+              allServers.push({
+                uri: post.uri,
+                value: record.value as MCPServerRecord
+              });
+            }
+          } catch (error) {
+            console.warn(`Failed to fetch record ${post.uri}:`, error);
+          }
+        }
+      }
+
+      res.json(allServers);
     } catch (error) {
-      console.error('Failed to fetch servers:', error)
-      res.status(500).json({ error: 'Failed to fetch servers' })
+      console.error('Failed to fetch servers:', error);
+      res.status(500).json({ error: 'Failed to fetch servers' });
     }
-  })
+  });
 
   // Delete a server record by URI
   router.delete('/servers/:uri(*)', async (req, res) => {
