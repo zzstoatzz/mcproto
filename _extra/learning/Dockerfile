@@ -6,6 +6,4 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 COPY . .
 
-EXPOSE 8000
-
 CMD ["uv", "run", "server.py"]
