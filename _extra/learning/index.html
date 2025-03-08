@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intro to Bluesky</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .step-animation {
+            transition: all 0.5s ease;
+        }
+
+        .highlight {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                background-color: rgba(59, 130, 246, 0.1);
+            }
+
+            50% {
+                background-color: rgba(59, 130, 246, 0.2);
+            }
+
+            100% {
+                background-color: rgba(59, 130, 246, 0.1);
+            }
+        }
+
+        .flow-arrow {
+            transition: stroke-dashoffset 1s ease-in-out;
+            stroke-dasharray: 10;
+            animation: flow 2s linear infinite;
+        }
+
+        @keyframes flow {
+            from {
+                stroke-dashoffset: 20;
+            }
+
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .tooltip {
+            @apply invisible absolute z-50 bg-gray-900 text-white text-sm rounded py-2 px-3 -mt-16 max-w-xs;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .has-tooltip {
+            @apply relative inline-block;
+        }
+
+        .has-tooltip:hover .tooltip {
+            @apply visible;
+        }
+
+        .profile-card {
+            transition: transform 0.2s;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-2px);
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto p-8">
+        <h1 class="text-3xl font-bold mb-2">Intro to Bluesky 🦋</h1>
+        <p class="text-gray-600 mb-8">See how your social posts and connections work behind the scenes</p>
+
+        <!-- Main Explorer Section -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <!-- Handle Input -->
+            <div class="mb-8">
+                <label class="block text-lg font-medium mb-2 has-tooltip">
+                    Look up someone's profile:
+                </label>
+                <div class="max-w-md">
+                    <div class="flex items-center bg-gray-50 p-2 rounded-lg mb-3">
+                        <span class="text-gray-500 mr-2">@</span>
+                        <input type="text" name="handle" placeholder="username.bsky.social"
+                            class="flex-1 bg-transparent border-none focus:ring-0 text-lg" hx-post="/lookup-identity"
+                            hx-trigger="keyup changed delay:500ms, search" hx-target="#identity-result">
+                    </div>
+                    <p class="text-sm text-gray-500" id="input-help">Enter someone's full Bluesky username, like
+                        jay.bsky.team</p>
+                </div>
+                <div id="identity-result" class="mt-4"></div>
+            </div>
+
+            <!-- What You Can See Section -->
+            <div class="border-t pt-6">
+                <h3 class="text-lg font-medium mb-4">What would you like to see?</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <button
+                        class="p-4 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-center group transition-all"
+                        hx-post="/get-records" hx-target="#records-result" hx-include="[name='handle']"
+                        hx-vals='{"type": "posts"}'>
+                        <div class="flex items-center justify-center gap-3 mb-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2">
+                                </path>
+                            </svg>
+                            <span class="font-medium">Recent Posts</span>
+                        </div>
+                        <p class="text-sm text-blue-600/75">See what they've been posting about</p>
+                    </button>
+
+                    <button
+                        class="p-4 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-center group transition-all"
+                        hx-post="/get-records" hx-target="#records-result" hx-include="[name='handle']"
+                        hx-vals='{"type": "follows"}'>
+                        <div class="flex items-center justify-center gap-3 mb-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                </path>
+                            </svg>
+                            <span class="font-medium">Following</span>
+                        </div>
+                        <p class="text-sm text-blue-600/75">Who they follow and interact with</p>
+                    </button>
+
+                    <button
+                        class="p-4 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-center group transition-all"
+                        hx-post="/get-records" hx-target="#records-result" hx-include="[name='handle']"
+                        hx-vals='{"type": "likes"}'>
+                        <div class="flex items-center justify-center gap-3 mb-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                </path>
+                            </svg>
+                            <span class="font-medium">Post Reactions</span>
+                        </div>
+                        <p class="text-sm text-blue-600/75">See who's liking their posts</p>
+                    </button>
+                </div>
+
+                <!-- Results Area -->
+                <div id="records-result" class="mt-6">
+                    <div class="text-center text-gray-500 py-8" id="records-prompt">
+                        Enter a username above to see their content
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works (Simplified) -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-xl font-semibold mb-6">How does this work?</h2>
+
+            <div class="space-y-6">
+                <!-- Step 1: Your Profile -->
+                <div class="relative flex items-start gap-4 p-4 bg-blue-50 rounded-lg group">
+                    <div
+                        class="absolute invisible group-hover:visible z-50 bg-gray-900 text-white text-sm rounded py-2 px-3 -top-12 left-1/2 transform -translate-x-1/2 max-w-xs">
+                        Your handle resolves to a DID (Decentralized Identifier) - a permanent ID that stays with you
+                        even if you change handles
+                    </div>
+                    <div
+                        class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-medium">
+                        1</div>
+                    <div>
+                        <p class="font-medium mb-1">Your Profile</p>
+                        <p class="text-gray-600">Just like email, you can have a Bluesky account anywhere (like
+                            @you.bsky.social).
+                            Your posts and likes stay with your account, no matter where you go.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2: Your Server -->
+                <div class="relative flex items-start gap-4 p-4 bg-green-50 rounded-lg group">
+                    <div
+                        class="absolute invisible group-hover:visible z-50 bg-gray-900 text-white text-sm rounded py-2 px-3 -top-12 left-1/2 transform -translate-x-1/2 max-w-xs">
+                        Your Personal Data Server (PDS) is hosted by Bluesky by default, but the network is designed so
+                        you could move to a different provider
+                    </div>
+                    <div
+                        class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-medium">
+                        2</div>
+                    <div>
+                        <p class="font-medium mb-1">Your Home Server</p>
+                        <p class="text-gray-600">Bluesky hosts your data on their servers, keeping everything safe and
+                            sharing your posts with your followers.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3: The Network -->
+                <div class="relative flex items-start gap-4 p-4 bg-purple-50 rounded-lg group">
+                    <div
+                        class="absolute invisible group-hover:visible z-50 bg-gray-900 text-white text-sm rounded py-2 px-3 -top-12 left-1/2 transform -translate-x-1/2 max-w-xs">
+                        The AppView service aggregates data from all PDSs, making it fast to fetch your personalized
+                        feed
+                    </div>
+                    <div
+                        class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-medium">
+                        3</div>
+                    <div>
+                        <p class="font-medium mb-1">Your Feed</p>
+                        <p class="text-gray-600">When you open your app, it collects posts from everyone you follow
+                            (no matter where their accounts are) and creates your personalized feed.</p>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-500 mt-4">
+                    Think of it like email: you can have a Gmail account and still email people who use Yahoo or
+                    Outlook.
+                    Bluesky works the same way - you can follow and interact with anyone, regardless of which server
+                    they use!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function removePromptIfExists() {
+            const prompt = document.getElementById('records-prompt');
+            if (prompt) {
+                prompt.remove();
+            }
+        }
+
+        // Handle profile card clicks to open Bluesky
+        document.addEventListener('click', function (evt) {
+            const card = evt.target.closest('.profile-card');
+            if (card) {
+                const handle = card.querySelector('.handle')?.textContent?.trim().replace('@', '');
+                if (handle) {
+                    window.open(`https://bsky.app/profile/${handle}`, '_blank');
+                }
+            }
+        });
+
+        document.addEventListener('htmx:afterSettle', function (evt) {
+            if (evt.detail.target.id === 'identity-result') {
+                const content = evt.detail.target.innerHTML;
+                if (!content.includes('text-red-600') && !content.includes('text-amber-600')) {
+                    document.getElementById('input-help').classList.add('hidden');
+                    removePromptIfExists();
+
+                    // Add profile card class and data attribute
+                    const profileCard = evt.detail.target.querySelector('.bg-white');
+                    if (profileCard) {
+                        profileCard.classList.add('profile-card');
+                    }
+                }
+            }
+        });
+
+        document.addEventListener('htmx:afterOnLoad', function (evt) {
+            if (evt.detail.target.id === 'records-result') {
+                removePromptIfExists();
+            }
+        });
+    </script>
+</body>
+
+</html>
