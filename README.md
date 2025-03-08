@@ -1,14 +1,20 @@
-# mcproto-client: Decentralized MCP Server Registry using AT Protocol
+# mcproto
 
-This project aims to create a **decentralized registry for discovering Model Context Protocol (MCP) servers** by leveraging the Authenticated Transfer Protocol (AT Protocol). This README provides an overview of the project, instructions for development setup, and the underlying philosophy.
+This project aims to track a **decentralized reputation of Model Context Protocol (MCP) servers** by leveraging the Authenticated Transfer Protocol (AT Protocol).
 
-## Development Setup
+- MCP server publishers register a `Record` to the `app.mcp.server` collection on their PDS
+- MCP server users discover and assess the reputation of MCP servers and their publishers
 
-To get started with development, follow the instructions below for both the registry (web UI and API) and the Python client.
+open questions:
+- how to instrument MCP servers to emit usage data?
+- what is the best way for users to seamlessly authenticate with atproto and emit usage data?
 
-### Registry (Web UI and API)
 
-The registry is built using Bun.
+## development
+
+### registry (web UI and API)
+
+This project uses `bun` for front-end development.
 
 1.  Navigate to the `registry` directory:
     ```bash
@@ -24,23 +30,33 @@ The registry is built using Bun.
     ```
     The registry will then be accessible at [http://localhost:3000](http://localhost:3000) (Web UI) and [http://localhost:3000/api/servers](http://localhost:3000/api/servers) (API).
 
-### Python Client
+### clients
 
-The Python client (`mcproto-client`) requires Python 3.10 or later. It uses `uv` for managing the Python environment and dependencies.
+For now what i mean by client is just "the instrumentation of an MCP server to register `app.mcp.server` records and emit usage data".
 
-1.  Navigate to the `clients/python` directory:
+#### python
+
+use `uv` for python toolchain:
+
+1.  navigate to the `clients/python` directory:
     ```bash
     cd clients/python
     ```
-2.  It is assumed you have `uv` installed. If not, please follow the installation instructions for `uv`.
-3.  **Install the Python dependencies** as specified in `pyproject.toml` and locked in `uv.lock`:
+2.  install dependencies:
     ```bash
     uv sync
     ```
-    This will synchronize your environment with the dependencies listed.
-4.  You can then use the `mcproto` script located in `src/mcproto_client/_cli.py` to interact with the registry.
+3.  register a server to the registry:
+    ```bash
+    uv run mcproto example_server.py:mcp
+    ```
 
-## Philosophy and Manifesto
+### [wip] typescript
+
+The typescript client is currently under development. See https://github.com/modelcontextprotocol/servers/tree/main/src.
+
+<details>
+<summary>philosophy and manifesto</summary>
 
 This project is driven by the vision of a more open and interconnected landscape for AI agents and the tools they utilize.
 
@@ -79,3 +95,5 @@ The Model Context Protocol (MCP) is an **open standard** aimed at providing a **
 *   **Open and Collaborative:** MCP is an **open-source standard** with SDKs in multiple languages, encouraging a collaborative ecosystem where developers can build and share MCP servers for various tools and data sources.
 
 By combining the decentralized data storage and identity of the AT Protocol with the standardized AI-to-tool communication of MCP, this project aims to build a robust and open ecosystem for the next generation of AI applications.
+
+</details>
