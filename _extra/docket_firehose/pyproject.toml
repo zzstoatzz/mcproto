@@ -1,0 +1,9 @@
+[project]
+name = "docket-firehose"
+description = "Distributed ATProto firehose consumer using Docket"
+requires-python = ">=3.12"
+dependencies = ["atproto", "pydocket"]
+dynamic = ["version"]
+
+[dependency-groups]
+dev = ["ruff", "ipython"]

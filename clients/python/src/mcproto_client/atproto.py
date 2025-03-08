@@ -55,25 +55,24 @@ def register_server(
         client = Client()
         profile = client.login(settings.handle, settings.password)
 
-        # Get list of tools from server
-        tools = [tool.name for tool in asyncio.run(server.list_tools())]
-
-        # Check for existing record with same package URL
-        existing_records = client.com.atproto.repo.list_records(
-            params=models.ComAtprotoRepoListRecords.Params(
-                repo=profile.did,
-                collection="app.mcp.server",
-            ),
-        )
-
         rkey = make_valid_rkey(package)
 
-        # Find existing record by rkey
-        existing_record = None
-        for record in existing_records.records:
-            if record.uri.split("/")[-1] == rkey:
-                existing_record = record
-                break
+        # Try to get existing record to preserve createdAt
+        created_at = datetime.now().isoformat()
+        try:
+            existing_records = client.com.atproto.repo.list_records(
+                params=models.ComAtprotoRepoListRecords.Params(
+                    repo=profile.did,
+                    collection="app.mcp.server",
+                ),
+            )
+            for record in existing_records.records:
+                if record.uri.split("/")[-1] == rkey and isinstance(record.value, dict):
+                    created_at = record.value.get("createdAt", created_at)
+                    break
+        except Exception:
+            # If we can't read records, just use current time for createdAt
+            pass
 
         # Get publisher info including handle verification
         publisher_info = {
@@ -95,12 +94,8 @@ def register_server(
             "package": package,
             "version": version,
             "description": description,
-            "tools": tools,
-            "createdAt": (
-                existing_record.value["createdAt"]
-                if existing_record and isinstance(existing_record.value, dict)
-                else datetime.now().isoformat()
-            ),
+            "tools": [tool.name for tool in asyncio.run(server.list_tools())],
+            "createdAt": created_at,
             "lastRegisteredAt": datetime.now().isoformat(),
             "publisher": publisher_info,
             "language": "python",
@@ -110,8 +105,8 @@ def register_server(
         if commit_sha:
             record_content["commitSha"] = commit_sha
 
-        if existing_record and isinstance(existing_record.value, dict):
-            # For updates, we need to send the complete record
+        try:
+            # Try to update existing record first
             client.com.atproto.repo.put_record(
                 models.ComAtprotoRepoPutRecord.Data(
                     repo=profile.did,
@@ -120,16 +115,21 @@ def register_server(
                     record=record_content,
                 )
             )
-        else:
-            # For new records, we send the complete record
-            client.com.atproto.repo.create_record(
-                models.ComAtprotoRepoCreateRecord.Data(
-                    repo=profile.did,
-                    collection="app.mcp.server",
-                    rkey=rkey,
-                    record=record_content,
+        except Exception as put_error:
+            # If update fails, try to create new record
+            try:
+                client.com.atproto.repo.create_record(
+                    models.ComAtprotoRepoCreateRecord.Data(
+                        repo=profile.did,
+                        collection="app.mcp.server",
+                        rkey=rkey,
+                        record=record_content,
+                    )
                 )
-            )
+            except Exception as create_error:
+                raise RuntimeError(
+                    f"Failed to update or create record: Update error: {put_error}, Create error: {create_error}"
+                )
 
     except Exception as e:
         raise RuntimeError(f"Failed to register MCP server with ATProto: {e}") from e

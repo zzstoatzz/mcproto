@@ -1,0 +1,68 @@
+services:
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - firehose-net
+
+  base:
+    build:
+      context: .
+      dockerfile: docker/base.Dockerfile
+    image: docket-firehose-base
+
+  firehose:
+    build:
+      context: .
+      dockerfile: docker/firehose/Dockerfile
+    command: [ "uv", "run", "python", "-c", "import asyncio; from src.tasks.firehose import consume_firehose; asyncio.run(consume_firehose(frozenset(['app.mcp.server'])))" ]
+    depends_on:
+      base:
+        condition: service_completed_successfully
+    volumes:
+      - firehose_data:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    networks:
+      - firehose-net
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/worker/Dockerfile
+    depends_on:
+      base:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - firehose_data:/app/data
+    networks:
+      - firehose-net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+networks:
+  firehose-net:
+    driver: bridge
+
+volumes:
+  redis_data:
+  firehose_data:
