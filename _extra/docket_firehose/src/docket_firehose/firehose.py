@@ -1,6 +1,6 @@
 """Entry point for the firehose consumer."""
 
-import asyncio
+import anyio
 
 from docket_firehose.tasks.firehose import consume_firehose
 
@@ -11,4 +11,4 @@ async def main(record_types: frozenset[str] = frozenset(["app.mcp.server"])) -> 
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    anyio.run(main)

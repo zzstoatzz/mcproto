@@ -15,7 +15,7 @@ services:
   base:
     build:
       context: .
-      dockerfile: docker/base.Dockerfile
+      dockerfile: base.Dockerfile
     image: docket-firehose-base
 
   firehose:
@@ -36,9 +36,8 @@ services:
       - firehose-net
 
   worker:
-    build:
-      context: .
-      dockerfile: docker/worker.Dockerfile
+    image: docket-firehose-base
+    command: [ "uv", "run", "-m", "docket_firehose.worker" ]
     depends_on:
       base:
         condition: service_completed_successfully

@@ -5,6 +5,9 @@ import logging
 
 def setup_logging(level: int = logging.INFO) -> None:
     """configure logging for the application."""
+    from docket_firehose.settings import Settings
+
+    settings = Settings()
 
     # configure root logger
     logging.basicConfig(
@@ -14,5 +17,5 @@ def setup_logging(level: int = logging.INFO) -> None:
     )
 
     # quiet noisy loggers
-    for name in ["websockets", "docket"]:
+    for name in settings._noisy_loggers:
         logging.getLogger(name).setLevel(logging.WARNING)

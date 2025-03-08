@@ -24,3 +24,5 @@ class Settings(BaseSettings):
     base_reputation_score: float = 0.1
     max_age_score: float = 0.9
     max_age_days: int = 30
+
+    _noisy_loggers: list[str] = ["websockets"]

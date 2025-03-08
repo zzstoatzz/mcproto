@@ -210,7 +210,7 @@ dev = [
 requires-dist = [
     { name = "atproto" },
     { name = "pydantic-settings" },
-    { name = "pydocket" },
+    { name = "pydocket", git = "https://github.com/chrisguidry/docket.git?rev=logs" },
 ]
 
 [package.metadata.requires-dev]
@@ -589,8 +589,8 @@ wheels = [
 
 [[package]]
 name = "pydocket"
-version = "0.2.1"
-source = { registry = "https://pypi.org/simple" }
+version = "0.2.2.dev1+g0b0bf3c"
+source = { git = "https://github.com/chrisguidry/docket.git?rev=logs#0b0bf3c4e485f73c367d23ed263fa6c3c8b19723" }
 dependencies = [
     { name = "cloudpickle" },
     { name = "opentelemetry-api" },
@@ -600,10 +600,6 @@ dependencies = [
     { name = "redis" },
     { name = "rich" },
     { name = "typer" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/93/ce/b74748df3f6d80f93212a31c2a653852d2cf4ea48bd07dcd593fb6eb2c64/pydocket-0.2.1.tar.gz", hash = "sha256:ad0427a6503a202e8a3eb5cd89e764a7405185f5eb8bf32094d7b3f0ed133043", size = 76879 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/7a/ed/41ffdede3b6abfd7279bbcc54041b01dba6619dd28708d7f1c9524ac552b/pydocket-0.2.1-py3-none-any.whl", hash = "sha256:15ae4c6c1ef48a00b6c682f24777654f080bcaaee6a91a5bfb6fe8e3ad621415", size = 27914 },
 ]
 
 [[package]]

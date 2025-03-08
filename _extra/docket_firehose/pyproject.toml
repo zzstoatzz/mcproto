@@ -3,14 +3,19 @@ name = "docket-firehose"
 version = "0.1.0"
 description = "ATProto firehose consumer using docket for task processing"
 requires-python = ">=3.12"
-dependencies = ["atproto", "pydocket", "pydantic-settings"]
+dependencies = [
+    "atproto",
+    "pydocket@git+https://github.com/chrisguidry/docket.git@logs",
+    "pydantic-settings",
+]
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.6.3,<0.7.0"]
+build-backend = "uv_build"
 
 [dependency-groups]
 dev = ["ruff", "ipython"]
 
-[tool.ruff]
+[tool.ruff.lint]
 extend-select = ["I", "UP"]
+

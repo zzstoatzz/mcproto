@@ -11,7 +11,6 @@ apt-get install -qyy \
     -o APT::Install-Suggests=false \
     build-essential \
     ca-certificates \
-    python3-setuptools \
     python3.12-dev
 EOT
 
@@ -23,7 +22,8 @@ ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
     UV_PYTHON_DOWNLOADS=never \
     UV_PYTHON=/usr/bin/python3.12 \
-    UV_PROJECT_ENVIRONMENT=/app
+    UV_PROJECT_ENVIRONMENT=/app \
+    UV_PREVIEW=1
 
 # Install dependencies
 RUN --mount=type=cache,target=/root/.cache \
@@ -34,16 +34,8 @@ RUN --mount=type=cache,target=/root/.cache \
     --no-dev \
     --no-install-project
 
-# Install the application
 COPY src/ /src/
 WORKDIR /src
-RUN --mount=type=cache,target=/root/.cache \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    uv sync \
-    --locked \
-    --no-dev \
-    --no-editable
 
 ##########################################################################
 
