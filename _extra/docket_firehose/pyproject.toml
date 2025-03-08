@@ -1,9 +1,16 @@
 [project]
 name = "docket-firehose"
-description = "Distributed ATProto firehose consumer using Docket"
+version = "0.1.0"
+description = "ATProto firehose consumer using docket for task processing"
 requires-python = ">=3.12"
-dependencies = ["atproto", "pydocket"]
-dynamic = ["version"]
+dependencies = ["atproto", "pydocket", "pydantic-settings"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = ["ruff", "ipython"]
+
+[tool.ruff]
+extend-select = ["I", "UP"]

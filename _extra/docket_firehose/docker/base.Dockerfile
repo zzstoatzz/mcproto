@@ -95,7 +95,7 @@ WORKDIR /app
 RUN <<EOT
 python -V
 python -Im site
-python -c 'from tasks.firehose import consume_firehose'
+python -c 'from docket_firehose.tasks.firehose import consume_firehose'
 EOT
 
 STOPSIGNAL SIGTERM 

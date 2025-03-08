@@ -19,10 +19,8 @@ services:
     image: docket-firehose-base
 
   firehose:
-    build:
-      context: .
-      dockerfile: docker/firehose/Dockerfile
-    command: [ "uv", "run", "python", "-c", "import asyncio; from src.tasks.firehose import consume_firehose; asyncio.run(consume_firehose(frozenset(['app.mcp.server'])))" ]
+    image: docket-firehose-base
+    command: [ "uv", "run", "-m", "docket_firehose.firehose" ]
     depends_on:
       base:
         condition: service_completed_successfully
@@ -40,7 +38,7 @@ services:
   worker:
     build:
       context: .
-      dockerfile: docker/worker/Dockerfile
+      dockerfile: docker/worker.Dockerfile
     depends_on:
       base:
         condition: service_completed_successfully

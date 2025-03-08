@@ -1,33 +1,30 @@
 """Worker for processing saved firehose records."""
 
-import anyio
 import logging
-import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
+import anyio
 from docket import Docket, Worker
 
-from tasks.process import process_saved_records
+from docket_firehose.logging import setup_logging
+from docket_firehose.settings import Settings
+from docket_firehose.tasks.process import process_saved_records
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(name)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
 logger = logging.getLogger("worker")
+settings = Settings()
 
 
 async def main() -> None:
     """Run the Docket worker to process saved records."""
-    redis_url = os.getenv("REDIS_URL", "redis://redis:6379/0")
+    setup_logging()
     logger.info("Starting worker")
 
-    async with Docket(name="firehose-processor", url=redis_url) as docket:
+    async with Docket(name="firehose-processor", url=settings.redis_url) as docket:
         logger.info("Connected to Redis, registering tasks...")
         docket.register(process_saved_records)
         logger.info("Tasks registered")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         await docket.add(process_saved_records)()
         await docket.add(process_saved_records, when=now + timedelta(minutes=5))()
         logger.info("Initial tasks scheduled")
