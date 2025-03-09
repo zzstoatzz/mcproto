@@ -21,7 +21,7 @@ def register_server(
     server: FastMCP,
     *,
     name: str,
-    package: str,
+    installation: str,
     description: str | None = None,
     version: str = "1.0.0",
     raise_on_error: bool = False,
@@ -31,7 +31,7 @@ def register_server(
     Args:
         server: The MCP server to register
         name: Display name of the server
-        package: URL or package identifier for installation
+        installation: Command to install and run the server (e.g. "uv run script.py")
         description: Optional description of the server
         version: Server version string
         raise_on_error: If True, missing credentials will raise ValueError. If False, will warn.
@@ -55,7 +55,7 @@ def register_server(
         client = Client()
         profile = client.login(settings.handle, settings.password)
 
-        rkey = make_valid_rkey(package)
+        rkey = make_valid_rkey(installation)
 
         # Try to get existing record to preserve createdAt
         created_at = datetime.now().isoformat()
@@ -85,13 +85,13 @@ def register_server(
             publisher_info["verifiedDomain"] = profile.handle
 
         # Extract commit SHA if GitHub URL
-        commit_sha = extract_github_commit_sha(package)
+        commit_sha = extract_github_commit_sha(installation)
 
         # Prepare base record data
         record_content = {
             "$type": "app.mcp.server",
             "name": name,
-            "package": package,
+            "installation": installation,
             "version": version,
             "description": description,
             "tools": [tool.name for tool in asyncio.run(server.list_tools())],

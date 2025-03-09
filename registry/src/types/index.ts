@@ -7,7 +7,7 @@ export interface Publisher {
 
 export interface MCPServerRecord {
     name: string
-    package: string
+    installation: string
     $type: string  // Changed from type to $type to match ATProto spec
     version?: string
     description?: string

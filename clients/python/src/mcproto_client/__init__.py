@@ -11,14 +11,14 @@ class MCPRegistrationContext:
         server: FastMCP,
         *,
         name: str,
-        package: str,
+        installation: str,
         description: str | None = None,
         version: str = "1.0.0",
         raise_on_error: bool = False,
     ):
         self.server = server
         self.name = name
-        self.package = package
+        self.installation = installation
         self.description = description
         self.version = version
         self.raise_on_error = raise_on_error
@@ -29,7 +29,7 @@ class MCPRegistrationContext:
             register_server(
                 self.server,
                 name=self.name,
-                package=self.package,
+                installation=self.installation,
                 description=self.description,
                 version=self.version,
                 raise_on_error=self.raise_on_error,
@@ -51,9 +51,9 @@ def register_mcp_server_with_atproto(
     server: FastMCP,
     *,
     name: str,
-    package: str,
+    installation: str,
     description: str | None = None,
-    version: str = "1.0.0",
+    version: str = "0.0.1",
     raise_on_error: bool = False,
 ) -> MCPRegistrationContext:
     """Context manager to register an MCP server with ATProto if credentials exist.
@@ -61,7 +61,7 @@ def register_mcp_server_with_atproto(
     Args:
         server: The MCP server to register
         name: Display name of the server
-        package: URL or package identifier for installation
+        installation: Command to install and run the server (e.g. "uv run script.py")
         description: Optional description of the server
         version: Server version string
         raise_on_error: If True, missing credentials will raise ValueError. If False, will warn.
@@ -76,7 +76,7 @@ def register_mcp_server_with_atproto(
         with register_mcp_server_with_atproto(
             mcp,
             name="My Server",
-            package="https://github.com/me/repo/blob/main/server.py",
+            installation="uv run server.py",
             description="Does cool stuff"
         ):
             mcp.run()
@@ -84,7 +84,7 @@ def register_mcp_server_with_atproto(
     return MCPRegistrationContext(
         server=server,
         name=name,
-        package=package,
+        installation=installation,
         description=description,
         version=version,
         raise_on_error=raise_on_error,

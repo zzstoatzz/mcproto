@@ -6,7 +6,7 @@ const NSID = "app.mcp.server";
 
 interface MCPServerRecord {
   name: string;
-  package: string;
+  installation: string;
   $type: string;
   description?: string;
   version?: string;
@@ -54,7 +54,7 @@ export class MCPRegistrationContext {
   async register(): Promise<void> {
     const handle = process.env.BSKY_HANDLE;
     const password = process.env.BSKY_PASSWORD;
-    const packageUrl = process.env.MCP_PACKAGE_URL;
+    const installationUrl = process.env.MCP_INSTALLATION_URL;
 
     if (!handle || !password) {
       const error = "BSKY_HANDLE and BSKY_PASSWORD environment variables not set. Cannot register server with ATProto without credentials.";
@@ -66,8 +66,8 @@ export class MCPRegistrationContext {
       }
     }
 
-    if (!packageUrl) {
-      const error = "MCP_PACKAGE_URL environment variable not set. Cannot register server with ATProto without a package URL.";
+    if (!installationUrl) {
+      const error = "MCP_INSTALLATION_URL environment variable not set. Cannot register server with ATProto without an installation URL.";
       if (this.raiseOnError) {
         throw new Error(error);
       } else {
@@ -89,7 +89,7 @@ export class MCPRegistrationContext {
       const toolNames = capabilities?.tools ? Object.keys(capabilities.tools) : [];
 
       // Check for existing record with same package URL
-      const rkey = makeValidRkey(packageUrl);
+      const rkey = makeValidRkey(installationUrl);
       const { data: records } = await agent.api.com.atproto.repo.listRecords({
         repo: agent.session.did,
         collection: NSID,
@@ -102,7 +102,7 @@ export class MCPRegistrationContext {
 
       const recordData: MCPServerRecord = {
         name: this.name,
-        package: packageUrl,
+        installation: installationUrl,
         $type: NSID,
         description: this.description,
         version: this.version,
@@ -163,6 +163,7 @@ export function registerMCPServerWithATProto(
   server: Server,
   options: {
     name: string;
+    installation: string;
     description?: string;
     version?: string;
     raiseOnError?: boolean;

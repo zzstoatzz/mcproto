@@ -19,7 +19,7 @@ if __name__ == "__main__":
     with register_mcp_server_with_atproto(
         mcp,
         name=mcp.name,
-        package="https://github.com/prefecthq/marvin/blob/main/examples/mcproto/server.py",
+        installation="uv run https://github.com/zzstoatzz/mcproto/blob/main/clients/python/example_server.py",
         description="A simple example MCP server",
     ):
         mcp.run()

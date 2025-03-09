@@ -18,9 +18,9 @@ export const lexicon: LexiconDoc = {
             type: 'string',
             description: 'Human-readable name of the MCP server'
           },
-          package: {
+          installation: {
             type: 'string',
-            description: 'NPM package name or other identifier to install/run the server'
+            description: 'Command or instructions to install and run the server (e.g. "uv run script.py" or "npx -y @package/name")'
           },
           $type: {
             type: 'string',

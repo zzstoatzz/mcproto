@@ -94,8 +94,9 @@ async function runServer() {
 
   const registration = registerMCPServerWithATProto(server, {
     name: "Typescript Example Server",
-    description: "An example Typescript MCP server",
-    version: "1.0.0",
+    description: "An example Typescript MCP server (sample)",
+    installation: "bun run https://github.com/zzstoatzz/mcproto/blob/main/clients/typescript/examples/example-server.ts",
+    version: "0.0.1",
   });
 
   await registration.register();
