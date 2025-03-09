@@ -14,10 +14,10 @@ apt-get install -qyy \
     python3.12-dev
 EOT
 
-# Install UV
+# Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# UV configuration
+# uv configuration
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
     UV_PYTHON_DOWNLOADS=never \
@@ -66,7 +66,7 @@ apt-get clean
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 EOT
 
-# Copy UV from build stage
+# Copy uv from build stage
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Copy the pre-built /app directory
