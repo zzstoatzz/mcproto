@@ -10,35 +10,16 @@ interface ServerCardProps {
     onAttest: (server: Server) => void
 }
 
-function getPackageInfo(pkg: string, commitSha?: string, language?: string): { type: string, displayName: string, installCommand: string } {
-    if (pkg.startsWith('@')) {
+function getInstallationInfo(installation: string, language?: string): { type: string, displayName: string } {
+    if (language?.toLowerCase() === 'typescript') {
         return {
-            type: 'NPM package',
-            displayName: pkg,
-            installCommand: `npm install ${pkg}`
-        }
-    }
-    if (pkg.includes('github.com')) {
-        // For installation, use the commit SHA if available
-        const installUrl = commitSha ?
-            pkg.replace(/\/(main|master|blob)\//, `/tree/${commitSha}/`) :
-            pkg;
-
-        // Language-specific installation instructions
-        const installCommand = language?.toLowerCase() === 'typescript' ?
-            `git clone ${pkg} && cd $(basename ${pkg} .git) && bun install && bun run examples/example-server.ts` :
-            `uv run ${installUrl}`;
-
-        return {
-            type: 'GitHub repository',
-            displayName: pkg,
-            installCommand
+            type: 'npx command',
+            displayName: installation
         }
     }
     return {
-        type: 'Package',
-        displayName: pkg,
-        installCommand: pkg
+        type: 'uv command',
+        displayName: installation
     }
 }
 
@@ -64,9 +45,8 @@ export function ServerCard({ server, onDelete, onPublisherClick, onAttest }: Ser
         return date.toLocaleString()
     }
 
-    const { type: packageType, displayName, installCommand } = getPackageInfo(
-        server.value.package,
-        server.value.commitSha,
+    const { type: installationType, displayName } = getInstallationInfo(
+        server.value.installation,
         server.value.language
     )
 
@@ -132,15 +112,10 @@ export function ServerCard({ server, onDelete, onPublisherClick, onAttest }: Ser
 
                 <div className="package-info">
                     <div className="package-label">
-                        {packageType}
-                        <span className="help-text" title={`Install with: ${installCommand}`}>
+                        {installationType}
+                        <span className="help-text" title="Command to install and run this server">
                             ℹ️
                         </span>
-                        {server.value.commitSha && (
-                            <span className="commit-sha" title="Git commit SHA for reproducible install">
-                                {server.value.commitSha.slice(0, 7)}
-                            </span>
-                        )}
                     </div>
                     <code className="package-name no-scrollbar">
                         {displayName}
