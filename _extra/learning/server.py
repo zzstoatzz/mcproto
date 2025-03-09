@@ -98,8 +98,8 @@ async def get_records(handle: str = Form(...), type: str = Form(...)):
         await client.login(settings.bsky_handle, settings.bsky_password)
 
         if type == "posts":
-            feed = await client.get_author_feed(actor=handle, limit=5)
-            posts = feed.feed
+            feed_response = await client.get_author_feed(actor=handle, limit=5)
+            posts = feed_response.feed
 
             if not posts:
                 return """
@@ -109,17 +109,17 @@ async def get_records(handle: str = Form(...), type: str = Form(...)):
                 """
 
             html_posts = []
-            for post in posts:
+            for i in posts:
                 post_text = (
-                    post.post.record.text
-                    if hasattr(post.post.record, "text")
+                    i.post.record.text
+                    if hasattr(i.post.record, "text")
                     else "No content"
                 )
                 html_posts.append(f"""
                 <div class="border-b last:border-0 py-4">
                     <div class="text-sm mb-2">{post_text}</div>
                     <div class="text-xs text-gray-500">
-                        {getattr(post.post, "like_count", 0)} likes · {getattr(post.post, "repost_count", 0)} reposts
+                        {getattr(i.post, "like_count", 0)} likes · {getattr(i.post, "repost_count", 0)} reposts
                     </div>
                 </div>
                 """)
@@ -160,20 +160,20 @@ async def get_records(handle: str = Form(...), type: str = Form(...)):
 
         elif type == "likes":
             # First get a recent post to show likes for
-            feed = await client.get_author_feed(actor=handle, limit=1)
-            if not feed.feed:
+            feed_response = await client.get_author_feed(actor=handle, limit=1)
+            if not feed_response.feed:
                 return """
                 <div class="text-gray-500 text-center py-4">
                     No posts found to show likes for
                 </div>
                 """
 
-            post = feed.feed[0]
-            likes = await client.get_likes(
+            post = feed_response.feed[0]
+            likes_response = await client.get_likes(
                 uri=post.post.uri, cid=post.post.cid, limit=10
             )
 
-            if not likes.likes:
+            if not (likes := likes_response.likes):
                 return """
                 <div class="text-gray-500 text-center py-4">
                     No likes found on recent posts
@@ -181,7 +181,7 @@ async def get_records(handle: str = Form(...), type: str = Form(...)):
                 """
 
             html_likes = []
-            for like in likes.likes:
+            for like in likes:
                 html_likes.append(f"""
                 <div class="flex items-center gap-3 py-3">
                     {f'<img src="{like.actor.avatar}" class="w-10 h-10 rounded-full">' if like.actor.avatar else f'<div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-medium">{like.actor.handle[0].upper()}</div>'}

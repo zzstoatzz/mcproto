@@ -8,7 +8,7 @@
         "dev:server": "bun --env-file=.env --watch src/server/index.ts",
         "dev": "concurrently \"bun run dev:client\" \"bun run dev:server\"",
         "build": "vite build",
-        "start": "bun --env-file=.env run build && bun --env-file=.env run src/server/index.ts"
+        "start": "bun run src/server/index.ts"
     },
     "dependencies": {
         "@atproto/api": "^0.12.0",

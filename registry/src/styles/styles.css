@@ -64,8 +64,32 @@ h1 {
 
 .controls {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 2rem;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .controls {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .app {
+        padding: 1rem;
+    }
+
+    .search-input,
+    .sort-select,
+    .group-toggle {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .group-toggle {
+        text-align: center;
+    }
 }
 
 .search-input,

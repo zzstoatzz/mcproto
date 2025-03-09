@@ -7,7 +7,7 @@ import { BskyAgent } from '@atproto/api';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
-const PORT = 3001;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 
 export async function createServer(agent: BskyAgent) {
   const app = express();
@@ -17,16 +17,16 @@ export async function createServer(agent: BskyAgent) {
 
   if (isProduction) {
     // Serve static files from Vite build output
-    app.use(express.static(path.join(__dirname, '..', 'dist')));
+    app.use(express.static(path.join(__dirname, '../../dist')));
 
     // Serve index.html for all other routes in production
     app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
+      res.sendFile(path.join(__dirname, '../../dist/index.html'));
     });
   }
 
   const server = new Server(app);
-  await new Promise<void>(resolve => server.listen(PORT, resolve));
+  await new Promise<void>(resolve => server.listen(PORT, '0.0.0.0', resolve));
   console.log(`Server listening on port ${PORT}`);
   return server;
 } 

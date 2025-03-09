@@ -1,5 +1,5 @@
 # /// script
-# dependencies = ["mcproto-client@git+https://github.com/prefecthq/marvin.git#examples/mcproto"]
+# dependencies = ["mcproto-client@git+https://github.com/zzstoatzz/mcproto.git#subdirectory=clients/python"]
 # ///
 
 from mcp.server.fastmcp import FastMCP
