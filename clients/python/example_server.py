@@ -14,12 +14,4 @@ def bloop(message: str) -> str:
 
 
 if __name__ == "__main__":
-    from mcproto_client import register_mcp_server_with_atproto
-
-    with register_mcp_server_with_atproto(
-        mcp,
-        name=mcp.name,
-        installation="uv run https://github.com/zzstoatzz/mcproto/blob/main/clients/python/example_server.py",
-        description="A simple example MCP server",
-    ):
-        mcp.run()
+    mcp.run()

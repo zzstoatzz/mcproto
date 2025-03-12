@@ -6,8 +6,8 @@ import sys
 from mcp.cli.cli import _import_server, _parse_file_path
 from mcp.server.fastmcp.utilities.logging import get_logger
 
-from . import register_mcp_server_with_atproto
-from ._git import get_github_url
+from mcproto_client._git import get_github_url
+from mcproto_client.atproto import register_server
 
 logger = get_logger("mcproto")
 
@@ -26,21 +26,16 @@ def main():
             sys.path.insert(0, file_dir)
 
         server = _import_server(file_path, server_object)
-        package = get_github_url(file_path)
+        github_url = get_github_url(file_path)
 
-        # Register and preserve existing record
-        ctx = register_mcp_server_with_atproto(
-            server,
+        register_server(
+            server=server,
             name=server.name,
-            package=package,
+            installation=f"uv run {github_url}",
             description=server.__doc__,
             version=args.version,
-            raise_on_error=True,  # CLI should always require credentials
         )
-        ctx.__enter__()
-        if not ctx.registered:
-            logger.error("Failed to register server with ATProto")
-            sys.exit(1)
+
         logger.info(f"Successfully registered {server.name} with ATProto")
     except ValueError as e:
         logger.error(f"Cannot register server: {str(e)}")
