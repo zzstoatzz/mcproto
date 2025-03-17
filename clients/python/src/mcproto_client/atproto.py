@@ -2,7 +2,6 @@
 
 import asyncio
 import hashlib
-import warnings
 from datetime import datetime
 
 from atproto import Client, models
@@ -23,8 +22,7 @@ def register_server(
     name: str,
     installation: str,
     description: str | None = None,
-    version: str = "1.0.0",
-    raise_on_error: bool = False,
+    version: str = "0.0.1",
 ) -> None:
     """Register an MCP server with ATProto if credentials exist.
 
@@ -34,22 +32,8 @@ def register_server(
         installation: Command to install and run the server (e.g. "uv run script.py")
         description: Optional description of the server
         version: Server version string
-        raise_on_error: If True, missing credentials will raise ValueError. If False, will warn.
     """
     settings = Settings()
-
-    if not settings.handle or not settings.password:
-        if raise_on_error:
-            raise ValueError(
-                "BSKY_HANDLE and BSKY_PASSWORD environment variables not set. "
-                "Cannot register server with ATProto without credentials."
-            )
-        else:
-            warnings.warn(
-                "BSKY_HANDLE and BSKY_PASSWORD environment variables not set. "
-                "Cannot register server with ATProto without credentials."
-            )
-            return
 
     try:
         client = Client()

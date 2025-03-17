@@ -2,11 +2,12 @@
 
 import argparse
 import sys
+import warnings
 
 from mcp.cli.cli import _import_server, _parse_file_path
 from mcp.server.fastmcp.utilities.logging import get_logger
 
-from mcproto_client._git import get_github_url
+from mcproto_client._git import source_url_from_file_path
 from mcproto_client.atproto import register_server
 
 logger = get_logger("mcproto")
@@ -26,13 +27,21 @@ def main():
             sys.path.insert(0, file_dir)
 
         server = _import_server(file_path, server_object)
-        github_url = get_github_url(file_path)
+        github_url = source_url_from_file_path(file_path)
+
+        description = server.__doc__
+        if not description:
+            warnings.warn(
+                f"No description found for server {server.name}, using default",
+                stacklevel=2,
+            )
+            description = f"Non-descript MCP server {server.name}"
 
         register_server(
             server=server,
             name=server.name,
             installation=f"uv run {github_url}",
-            description=server.__doc__,
+            description=description,
             version=args.version,
         )
 

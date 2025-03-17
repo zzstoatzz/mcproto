@@ -14,7 +14,7 @@ def _run_git(args: list[str], cwd: str | Path) -> str:
     ).stdout.strip()
 
 
-def get_github_url(file_path: Path) -> str:
+def _get_github_url(file_path: Path) -> str:
     """Get the GitHub URL for a file in the current repository.
 
     Raises:
@@ -46,6 +46,53 @@ def get_github_url(file_path: Path) -> str:
             raise ValueError("No git remote configured")
     except subprocess.CalledProcessError:
         raise ValueError("Not in a git repository")
+
+
+def _github_to_raw_url(github_url: str) -> str:
+    """
+    Convert a GitHub file URL to its raw content URL.
+
+    Args:
+        github_url: A GitHub URL to a file, in the format:
+                   https://github.com/{owner}/{repo}/blob/{branch}/{path}
+
+    Returns:
+        The raw content URL in the format:
+        https://raw.githubusercontent.com/{owner}/{repo}/refs/heads/{branch}/{path}
+
+    Example:
+        >>> github_to_raw_url("https://github.com/zzstoatzz/mcproto/blob/main/clients/python/example_server.py")
+        "https://raw.githubusercontent.com/zzstoatzz/mcproto/refs/heads/main/clients/python/example_server.py"
+    """
+    # Check if the URL is a valid GitHub blob URL
+    if not github_url.startswith("https://github.com/") or "/blob/" not in github_url:
+        raise ValueError("URL must be a valid GitHub file URL")
+
+    # Split the URL to extract the components
+    parts = github_url.split("/")
+    if len(parts) < 8:
+        raise ValueError("Invalid GitHub URL format")
+
+    # Extract owner, repo, branch
+    owner = parts[3]
+    repo = parts[4]
+    branch = parts[6]
+
+    # Extract the file path (everything after the branch)
+    path = "/".join(parts[7:])
+
+    # Construct the raw URL
+    raw_url = (
+        f"https://raw.githubusercontent.com/{owner}/{repo}/refs/heads/{branch}/{path}"
+    )
+
+    return raw_url
+
+
+def source_url_from_file_path(file_path: Path) -> str:
+    """Get the source URL for a file in the current repository."""
+    github_url = _get_github_url(file_path)
+    return _github_to_raw_url(github_url)
 
 
 def extract_github_commit_sha(package_url: str) -> str | None:
