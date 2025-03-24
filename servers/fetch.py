@@ -9,7 +9,11 @@ from mcp.server.fastmcp import FastMCP
 import httpx
 
 
-server = FastMCP("Fetch text from URL", dependencies=["trafilatura"])
+server = FastMCP(
+    "Fetch text from URL",
+    instructions="Use to fetch text from a URL",
+    dependencies=["trafilatura"],
+)
 
 
 @server.tool()

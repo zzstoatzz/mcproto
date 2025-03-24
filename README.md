@@ -97,3 +97,55 @@ This starts:
 3. Firehose consumer captures and saves registration events
 4. Registry UI displays servers with real-time updates
 5. Future: Background processing for reputation analysis
+
+# Register MCP Server Action
+
+This action registers your Model Context Protocol (MCP) server with the decentralized registry.
+
+## Usage
+
+```yaml
+name: Register MCP Server
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.py'  # or your specific MCP server path
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: zzstoatzz/register-mcp@v1
+        with:
+          server_path: 'path/to/servers'  # or directory containing servers
+          bsky_handle: <YOUR_BLUESKY_HANDLE>
+          bsky_password: ${{ secrets.BSKY_PASSWORD }}
+```
+
+## Inputs
+
+- `server_path`: Path to your MCP server file or directory containing MCP servers
+  - Required: true
+  - Default: '.'
+
+- `bsky_handle`: Your Bluesky handle
+  - Required: true
+  - Set this as a GitHub secret
+
+- `bsky_password`: Your Bluesky password
+  - Required: true
+  - Set this as a GitHub secret
+
+## Example: Register Multiple Servers
+
+If you have multiple MCP servers in a directory:
+
+```yaml
+- uses: zzstoatzz/register-mcp@v1
+  with:
+    server_path: './servers'  # directory containing .py files with MCP servers
+    bsky_handle: ${{ secrets.BSKY_HANDLE }}
+    bsky_password: ${{ secrets.BSKY_PASSWORD }}
+```

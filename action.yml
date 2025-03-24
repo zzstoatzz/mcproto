@@ -1,0 +1,36 @@
+name: 'Register MCP Server'
+description: 'Register your MCP server as an AtProto record'
+inputs:
+  server_path:
+    description: 'Path to your MCP server file or directory containing MCP servers'
+    required: true
+    default: '.'
+    example: 'servers'
+  bsky_handle:
+    description: 'Your Bluesky handle'
+    required: true
+  bsky_password:
+    description: 'Your Bluesky password'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: "3.12"
+
+    - name: Register MCP Server(s)
+      shell: bash
+      env:
+        BSKY_HANDLE: ${{ inputs.bsky_handle }}
+        BSKY_PASSWORD: ${{ inputs.bsky_password }}
+      run: |
+        if [ -d "${{ inputs.server_path }}" ]; then
+          for file in ${{ inputs.server_path }}/*.py; do
+            echo "Registering MCP server found in $file"
+            uv run --with mcproto-client@git+https://github.com/zzstoatzz/mcproto.git#subdirectory=clients/python mcproto "$file"
+          done
+        else
+          uv run --with mcproto-client@git+https://github.com/zzstoatzz/mcproto.git#subdirectory=clients/python mcproto "${{ inputs.server_path }}"
+        fi 

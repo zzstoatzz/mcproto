@@ -17,9 +17,8 @@ def make_valid_rkey(package: str) -> str:
 
 
 def register_server(
-    server: FastMCP,
     *,
-    name: str,
+    server: FastMCP,
     installation: str,
     description: str | None = None,
     version: str = "0.0.1",
@@ -27,13 +26,15 @@ def register_server(
     """Register an MCP server with ATProto if credentials exist.
 
     Args:
-        server: The MCP server to register
         name: Display name of the server
+        tools: List of tool names available in the server
         installation: Command to install and run the server (e.g. "uv run script.py")
         description: Optional description of the server
         version: Server version string
     """
-    settings = Settings()
+    settings = Settings()  # type: ignore
+    name = server.name
+    tools = [tool.name for tool in asyncio.run(server.list_tools())]
 
     try:
         client = Client()
@@ -78,7 +79,7 @@ def register_server(
             "installation": installation,
             "version": version,
             "description": description,
-            "tools": [tool.name for tool in asyncio.run(server.list_tools())],
+            "tools": tools,
             "createdAt": created_at,
             "lastRegisteredAt": datetime.now().isoformat(),
             "publisher": publisher_info,

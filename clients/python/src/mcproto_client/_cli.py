@@ -9,6 +9,7 @@ from mcp.server.fastmcp.utilities.logging import get_logger
 
 from mcproto_client._git import source_url_from_file_path
 from mcproto_client.atproto import register_server
+from mcproto_client.settings import Settings
 
 logger = get_logger("mcproto")
 
@@ -39,13 +40,20 @@ def main():
 
         register_server(
             server=server,
-            name=server.name,
             installation=f"uv run {github_url}",
             description=description,
             version=args.version,
         )
+        try:
+            settings = Settings()  # type: ignore
+        except ValueError as e:
+            logger.error(f"Cannot register server: {str(e)}")
+            sys.exit(1)
 
-        logger.info(f"Successfully registered {server.name} with ATProto")
+        logger.info(
+            f"Successfully registered {server.name!r} with ATProto as {settings.handle!r}"
+        )
+        logger.info(f"View your newly registered server at {settings.registry_url}")
     except ValueError as e:
         logger.error(f"Cannot register server: {str(e)}")
         sys.exit(1)
