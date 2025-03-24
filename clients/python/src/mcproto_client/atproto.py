@@ -20,7 +20,7 @@ def make_valid_rkey(package: str) -> str:
 
 def register_server(
     *,
-    server: Server[Any],
+    server: Server[Any] | FastMCP,
     installation: str,
     description: str | None = None,
     version: str = "0.0.1",
