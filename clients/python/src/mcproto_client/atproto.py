@@ -83,7 +83,6 @@ async def register_server(
     else:
         tools = []  # TODO: get tool names from low-level server
 
-    breakpoint()
     record_content = {
         "$type": "app.mcp.server",
         "name": server.name,
