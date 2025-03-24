@@ -1,11 +1,10 @@
 """ATProto integration for MCP server registration."""
 
-import asyncio
 import hashlib
 from datetime import datetime
 from typing import Any
 
-from atproto import Client, models
+from atproto import AsyncClient, models
 from mcp.server.fastmcp.server import FastMCP
 from mcp.server.lowlevel.server import Server
 
@@ -18,7 +17,7 @@ def make_valid_rkey(package: str) -> str:
     return hashlib.sha256(package.encode()).hexdigest()[:32]
 
 
-def register_server(
+async def register_server(
     *,
     server: Server[Any] | FastMCP,
     installation: str,
@@ -46,15 +45,15 @@ def register_server(
 
     settings = Settings(**provided_options)
 
-    client = Client()
-    profile = client.login(settings.handle, settings.password)
+    client = AsyncClient()
+    profile = await client.login(settings.handle, settings.password)
 
     rkey = make_valid_rkey(installation)
 
     # Try to get existing record to preserve createdAt
     created_at = datetime.now().isoformat()
     try:
-        existing_records = client.com.atproto.repo.list_records(
+        existing_records = await client.com.atproto.repo.list_records(
             params=models.ComAtprotoRepoListRecords.Params(
                 repo=profile.did,
                 collection="app.mcp.server",
@@ -80,7 +79,7 @@ def register_server(
 
     # Prepare base record data
     if isinstance(server, FastMCP):
-        tools = asyncio.run(server.list_tools())
+        tools = await server.list_tools()
     else:
         tools = []  # TODO: get tool names from low-level server
 
@@ -104,7 +103,7 @@ def register_server(
 
     try:
         # Try to update existing record first
-        client.com.atproto.repo.put_record(
+        await client.com.atproto.repo.put_record(
             models.ComAtprotoRepoPutRecord.Data(
                 repo=profile.did,
                 collection="app.mcp.server",
@@ -116,7 +115,7 @@ def register_server(
         # If update fails, try to create new record
         try:
             print(f"Creating record: {record_content}")
-            client.com.atproto.repo.create_record(
+            await client.com.atproto.repo.create_record(
                 models.ComAtprotoRepoCreateRecord.Data(
                     repo=profile.did,
                     collection="app.mcp.server",
