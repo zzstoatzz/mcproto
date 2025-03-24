@@ -91,7 +91,7 @@ def _github_to_raw_url(github_url: str) -> str:
 
 def source_url_from_file_path(file_path: Path) -> str:
     """Get the source URL for a file in the current repository."""
-    github_url = _get_github_url(file_path)
+    github_url = _get_github_url(Path(file_path))
     return _github_to_raw_url(github_url)
 
 
