@@ -5,10 +5,7 @@ description = "client to register MCP servers with AT Protocol"
 readme = "README.md"
 authors = [{ name = "zzstoatzz", email = "thrast36@gmail.com" }]
 requires-python = ">=3.10"
-dependencies = [
-    "mcp[cli]@git+https://github.com/zzstoatzz/python-sdk.git@allow-hooks",
-    "atproto",
-]
+dependencies = ["mcp[cli]", "atproto"]
 
 
 [dependency-groups]

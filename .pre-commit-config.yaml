@@ -8,10 +8,3 @@ repos:
       args: [ --fix ]
     # Run the formatter.
     - id: ruff-format
-- repo: local
-  hooks:
-    - id: register-all-servers
-      name: Register all MCP servers
-      entry: bash -c 'cd $(git rev-parse --show-toplevel) && just register-all-servers'
-      language: system
-      pass_filenames: false
